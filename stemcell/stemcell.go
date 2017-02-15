@@ -7,6 +7,7 @@ import (
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 
 	yaml "gopkg.in/yaml.v2"
+	"path/filepath"
 )
 
 type ExtractedStemcell interface {
@@ -78,7 +79,12 @@ func (s *extractedStemcell) GetExtractedPath() string {
 }
 
 func (s *extractedStemcell) Save() error {
-	// TODO(cdutra): implement me
+	stemcellMfPath := filepath.Join(s.extractedPath, "stemcell.MF")
+	contents, _ := yaml.Marshal(s.manifest)
+	err := s.fs.WriteFile(stemcellMfPath, contents)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

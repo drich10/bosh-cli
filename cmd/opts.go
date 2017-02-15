@@ -160,7 +160,7 @@ type HelpOpts struct {
 
 // Original bosh-init
 type CreateEnvOpts struct {
-	Args      CreateEnvArgs `positional-args:"true" required:"true"`
+	Args CreateEnvArgs `positional-args:"true" required:"true"`
 	VarFlags
 	OpsFlags
 	StatePath string `long:"state" value-name:"PATH" description:"State file path"`
@@ -172,7 +172,7 @@ type CreateEnvArgs struct {
 }
 
 type DeleteEnvOpts struct {
-	Args      DeleteEnvArgs `positional-args:"true" required:"true"`
+	Args DeleteEnvArgs `positional-args:"true" required:"true"`
 	VarFlags
 	OpsFlags
 	StatePath string `long:"state" value-name:"PATH" description:"State file path"`

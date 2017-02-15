@@ -5,13 +5,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	fakebistemcell "github.com/cloudfoundry/bosh-cli/stemcell/stemcellfakes"
+	boshcmdfakes "github.com/cloudfoundry/bosh-utils/fileutil/fakes"
 	fakesys "github.com/cloudfoundry/bosh-utils/system/fakes"
 
-	boshcmdfakes "github.com/cloudfoundry/bosh-utils/fileutil/fakes"
-
 	"errors"
-	fakebistemcell "github.com/cloudfoundry/bosh-cli/stemcell/stemcellfakes"
-	"os"
 )
 
 var _ = Describe("Manager", func() {
@@ -22,7 +20,6 @@ var _ = Describe("Manager", func() {
 
 		fakeCompressor        *boshcmdfakes.FakeCompressor
 		fakeExtractedStemcell *fakebistemcell.FakeExtractedStemcell
-		tmpDir                string
 	)
 
 	BeforeEach(func() {
@@ -35,10 +32,6 @@ var _ = Describe("Manager", func() {
 		packer = NewPacker(fakeCompressor)
 
 		fakeExtractedStemcell.GetExtractedPathReturns(stemcellExtractionDir)
-	})
-
-	AfterEach(func() {
-		os.RemoveAll(tmpDir)
 	})
 
 	Describe("Pack", func() {

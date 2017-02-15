@@ -6,9 +6,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"errors"
 	biproperty "github.com/cloudfoundry/bosh-utils/property"
-
 	fakesys "github.com/cloudfoundry/bosh-utils/system/fakes"
+	"gopkg.in/yaml.v2"
+	"path/filepath"
 )
 
 var _ = Describe("Stemcell", func() {
@@ -33,7 +35,7 @@ var _ = Describe("Stemcell", func() {
 		)
 	})
 
-	Describe("#Manifest", func() {
+	Describe("Manifest", func() {
 		It("returns the manifest", func() {
 			Expect(stemcell.Manifest()).To(Equal(manifest))
 		})
@@ -199,6 +201,52 @@ new_property: didn't previously exist
 			It("adds new properties", func() {
 				stemcell.SetCloudProperties(newStemcellCloudProperties)
 				Expect(stemcell.Manifest().CloudProperties["new_property"]).To(Equal("didn't previously exist"))
+			})
+		})
+	})
+
+	Describe("Save", func() {
+		var (
+			writtenManifest Manifest
+			stemcellMfPath  string
+		)
+
+		BeforeEach(func() {
+			manifest = Manifest{
+				ImagePath: "fake-image-path",
+				Name:      "fake-stemcell-name",
+				Version:   "3312.12",
+				OS:        "centos-7",
+				SHA1:      "fake-sha",
+				CloudProperties: biproperty.Map{
+					"infrastructure": "vsphere",
+				},
+			}
+
+			stemcell = NewExtractedStemcell(
+				manifest,
+				extractedPath,
+				fakefs,
+			)
+			stemcellMfPath = filepath.Join(extractedPath, "stemcell.MF")
+		})
+
+		It("writes the stemcell.MF in the extracted director", func() {
+			err := stemcell.Save()
+			Expect(err).To(Not(HaveOccurred()))
+			Expect(fakefs.FileExists(stemcellMfPath)).To(BeTrue())
+
+			manifestContents, err := fakefs.ReadFile(stemcellMfPath)
+			yaml.Unmarshal(manifestContents, &writtenManifest)
+
+			Expect(manifest).To(Equal(writtenManifest))
+		})
+		Context("when it can't write the stemcell.MF file", func() {
+			It("returns an error", func() {
+				fakefs.WriteFileError = errors.New("fake-write-file-error")
+				err := stemcell.Save()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("fake-write-file-error"))
 			})
 		})
 	})
